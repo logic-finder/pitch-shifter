@@ -38,11 +38,29 @@ void raise_err(char *, ...);
 int get_endianness(void);
 
 /*
- * 
+ * validate_execution: This function checks the command line
+ * arguments.
  */
 void validate_execution(int, char **, struct execution_options *);
+
+/*
+ * open_wav: This function opens two streams for
+ * the input wav file and the output wave file
+ * before processings are to take place.
+ */
 void open_wav(struct execution_options *, FILE **, FILE **);
+
+/*
+ * close_wav: This function closes two streams for
+ * the input wav file and the output wave file
+ * after all processings have been done.
+ */
 void close_wav(FILE *, FILE *);
+
+/*
+ * realize_execution_options: This function creates
+ * a new struct execution_options.
+ */
 struct execution_options *realize_execution_options(void);
 
 #endif
