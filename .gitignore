@@ -1,0 +1,4 @@
+*.o
+process
+/in
+/out
