@@ -77,7 +77,7 @@ static void handle_factor_option(struct execution_options *options, char *src, i
    (*counter)++;
 }
 
-static void handle_size_option(struct execution_options *options, char *src, int *counter) {
+static void handle_size_option(struct execution_options *options, char *src) {
    _handle_common_task(&options->__size, src, 5);
    options->__size[4] = '\0';
    options->size = atoi(options->__size);
@@ -105,7 +105,7 @@ void validate_execution(int argc, char **argv, struct execution_options *options
       else if (strncmp(*argv, OP_FAC, strlen(OP_FAC)) == 0)
          handle_factor_option(options, *(argv + 1), &required_option_count);
       else if (strncmp(*argv, OP_SIZE, strlen(OP_SIZE)) == 0)
-         handle_size_option(options, *(argv + 1), &required_option_count);
+         handle_size_option(options, *(argv + 1));
       else if (strncmp(*argv, OP_VB, strlen(OP_VB)) == 0)
          handle_verbose_option(options);
       argv++;
