@@ -442,5 +442,5 @@ void write_wav_header(FILE *dest,
    result = fwrite(&subchunk_2_size, 4, 1, dest);
    if (result != 1) raise_err("Failed to write Subchunk2Size.");
 
-   printf("Done: %" PRId32 " (byte)\n", 44 + subchunk_2_size);
+   printf("\aDone: %" PRId32 " (byte)\n", 44 + subchunk_2_size);
 }
