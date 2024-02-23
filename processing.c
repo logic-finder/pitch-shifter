@@ -264,6 +264,7 @@ uint32_t process_wav(FILE *src,
 
       result = fwrite(&padding, 4, 1, dest);
       if (result != 1) raise_err("Failed to write data.");
+      sample_number++;
    }
    
    free(src_buf);
