@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
    options = realize_execution_options();
    validate_execution(argc, argv, options);
    open_wav(options, &src, &dest);
-   observe_wav(src, &info, is_le);
+   observe_wav(src, &info, is_le, options->verbose);
    if (options->verbose)
       show_wav_info(options->src_name, &info);
    assess_wav_info(&info);

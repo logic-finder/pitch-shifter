@@ -7,6 +7,7 @@
 #define WAVE 0x57415645
 #define FMT  0x666D7420
 #define DATA 0x64617461
+#define LIST 0x4C495354
 
 /*
  * Note: These two functions reverse the byte
@@ -21,30 +22,16 @@ inline static void endrev32(uint32_t *p) {
         (*p & 0x00FF0000) >> 8 | (*p & 0xFF000000) >> 24;
 }
 
-void observe_wav(FILE *src, struct wav_info *info, bool is_le) {
+static void _handle_fmt_subchunk(FILE *src,
+                                 struct wav_info *info,
+                                 bool is_le,
+                                 uint32_t chunk_size) {
    int result;
    bool le = is_le;
    bool be = !le;
 
-   result = fread(&info->chunk_id, 4, 1, src);
-   if (result != 1) raise_err("Failed to read ChunkID.");
-   if (le) endrev32(&info->chunk_id);
-   
-   result = fread(&info->chunk_size, 4, 1, src);
-   if (result != 1) raise_err("Failed to read ChunkSize.");
-   if (be) endrev32(&info->chunk_size);
-   
-   result = fread(&info->format, 4, 1, src);
-   if (result != 1) raise_err("Failed to read Format.");
-   if (le) endrev32(&info->format);
-
-   result = fread(&info->subchunk_1_id, 4, 1, src);
-   if (result != 1) raise_err("Failed to read Subchunk1ID.");
-   if (le) endrev32(&info->subchunk_1_id);
-
-   result = fread(&info->subchunk_1_size, 4, 1, src);
-   if (result != 1) raise_err("Failed to read Subchunk1Size.");
-   if (be) endrev32(&info->subchunk_1_size);
+   info->subchunk_1_id = FMT;
+   info->subchunk_1_size = chunk_size;
 
    result = fread(&info->audio_format, 2, 1, src);
    if (result != 1) raise_err("Failed to read AudioFormat.");
@@ -70,25 +57,96 @@ void observe_wav(FILE *src, struct wav_info *info, bool is_le) {
    if (result != 1) raise_err("Failed to read BitsPerSample.");
    if (be) endrev16(&info->bits_per_sample);
 
-   /* Skip (possible) optional chunks until the data subchunk. */
-   for (;;) {
-      result = fread(&info->subchunk_2_id, 4, 1, src);
-      if (result != 1) raise_err("Failed to read Subchunk2ID.");
-      if (le) endrev32(&info->subchunk_2_id);
-      
-      result = fread(&info->subchunk_2_size, 4, 1, src);
-      if (result != 1) raise_err("Failed to read Subchunk2Size.");
-      if (be) endrev32(&info->subchunk_2_size);
+   if (chunk_size == 18 || chunk_size == 40) {
+      result = fseek(src, chunk_size - 16, SEEK_CUR);
+      if (result != 0) raise_err("Failed to seek the file position.");
+   }
+}
 
-      if (info->subchunk_2_id == DATA)
+static void _handle_data_subchunk(struct wav_info *info,
+                                  bool is_le,
+                                  uint32_t chunk_size) {
+   bool le = is_le;
+   bool be = !le;
+
+   info->subchunk_2_id = DATA;
+   info->subchunk_2_size = chunk_size;
+}
+
+static void _handle_list_chunk(FILE *src,
+                               uint32_t chunk_size,
+                               bool is_verbose) {
+   int result;
+
+   if (is_verbose)
+      printf("A LIST chunk has been found but ignored.\n");
+
+   result = fseek(src, chunk_size, SEEK_CUR);
+   if (result != 0) raise_err("Failed to seek the file position.");
+}
+
+void observe_wav(FILE *src,
+                 struct wav_info *info,
+                 bool is_le,
+                 bool is_verbose) {
+   bool is_fmt_subchunk_found = false;
+   bool is_data_subchunk_found = false;
+   bool le = is_le;
+   bool be = !le;
+   int result;
+   uint32_t chunk_id, chunk_size;
+
+   result = fread(&info->chunk_id, 4, 1, src);
+   if (result != 1) raise_err("Failed to read RIFF.");
+   if (le) endrev32(&info->chunk_id);
+   
+   result = fread(&info->chunk_size, 4, 1, src);
+   if (result != 1) raise_err("Failed to read the size of the RIFF chunk.");
+   if (be) endrev32(&info->chunk_size);
+   
+   result = fread(&info->format, 4, 1, src);
+   if (result != 1) raise_err("Failed to read WAVE.");
+   if (le) endrev32(&info->format);
+
+   /*
+    * Skip (possible) optional chunks and try to find
+    * a fmt and data subchunk.
+    */
+   while (!is_data_subchunk_found) {
+      result = fread(&chunk_id, 4, 1, src);
+      if (result != 1) raise_err("Failed to read ChunkID.");
+      if (le) endrev32(&chunk_id);
+      
+      result = fread(&chunk_size, 4, 1, src);
+      if (result != 1) raise_err("Failed to read ChunkSize.");
+      if (be) endrev32(&chunk_size);
+
+      if (chunk_size > LONG_MAX)
+            raise_err("A file too big: I wouldn't like to process this file.");
+
+      switch (chunk_id) {
+         case FMT: {
+            _handle_fmt_subchunk(src, info, is_le, chunk_size);
+            is_fmt_subchunk_found = true;
+         }
          break;
-      else {
-         if (info->subchunk_2_size > LONG_MAX)
-            raise_err("I wouldn't like to process this file.");
-         result = fseek(src, info->subchunk_2_size, SEEK_CUR);
-         if (result != 0) raise_err("Failed to seek the file position.");
+         case DATA: {
+            _handle_data_subchunk(info, is_le, chunk_size);
+            is_data_subchunk_found = true;
+         }
+         break;
+         case LIST:
+            _handle_list_chunk(src, chunk_size, is_verbose);
+         break;
+         default: {
+            result = fseek(src, chunk_size, SEEK_CUR);
+            if (result != 0) raise_err("Failed to seek the file position.");
+         }
       }
    }
+
+   if (!is_fmt_subchunk_found)
+      raise_err("An invalidly formatted .wav file.");
 }
 
 /* Note: This function does this task: 0x9798 --> "ab" */

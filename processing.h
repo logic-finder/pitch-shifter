@@ -27,7 +27,7 @@ struct wav_info {
  * wav file. Also, it saves the acquired information to the
  * struct wav_info for later use.
  */
-void observe_wav(FILE *, struct wav_info *, bool);
+void observe_wav(FILE *, struct wav_info *, bool, bool);
 
 /*
  * show_wav_info: This function displays the metadata of the
