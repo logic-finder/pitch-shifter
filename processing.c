@@ -189,8 +189,9 @@ uint32_t process_wav(FILE *src,
    if (src_buf == NULL) raise_err("Failed to allocate memory dynamically.");
 
    /* From here, data processing begins. */
-   int i, k;
+   int i, k, channel;
    bool be = !is_le;
+   uint16_t num_channels = info->num_channels;
    uint32_t total_sample = info->subchunk_2_size
                            / (info->num_channels * (info->bits_per_sample / 8));
    uint32_t total_unit = total_sample / grain_size;
@@ -208,18 +209,17 @@ uint32_t process_wav(FILE *src,
          result = fread(src_buf, 2, buf_len, src);
          if (result != buf_len) break;
 
-         for (i = 0, j = 0; i < grain_size; i++, j += pitch_factor) {
-            if (j >= grain_size) j = 0;
-            dest_buf[2 * i]
-               = src_buf[2 * (int) j] * window(i, grain_size);
-            dest_buf[2 * i + 1]
-               = src_buf[2 * (int) j + 1] * window(i, grain_size);
-         }
-         if (!is_le)
-            for (i = 0; i < grain_size; i++) {
-               endrev16(&dest_buf[2 * i]);
-               endrev16(&dest_buf[2 * i + 1]);
+         for (channel = 0; channel < num_channels; channel++)
+            for (i = 0, j = 0; i < grain_size; i++, j += pitch_factor) {
+               if (j >= grain_size) j = 0;
+               dest_buf[num_channels * i + channel]
+                  = src_buf[num_channels * (int) j + channel]
+                    * window(i, grain_size);
             }
+            if (!is_le)
+               for (i = 0; i < grain_size; i++)
+                  endrev16(&dest_buf[num_channels * i + channel]);
+
          result = fwrite(dest_buf, 2, buf_len, dest);
          if (result != buf_len) raise_err("Failed to write data.");
       }
@@ -240,18 +240,17 @@ uint32_t process_wav(FILE *src,
          result = fread(src_buf, 2, buf_len, src);
          if (result !=  buf_len) break;
 
-         for (i = 0, j = 0; i < part; i++, j++) {
-            if (j == grain_size) j = 0;
-            dest_buf[2 * i]
-               = src_buf[2 * j] * window(i, part);
-            dest_buf[2 * i + 1]
-               = src_buf[2 * j + 1] * window(i, part);
-         }
-         if (!is_le)
-            for (i = 0; i < part; i++) {
-               endrev16(&dest_buf[2 * i]);
-               endrev16(&dest_buf[2 * i + 1]);
+         for (channel = 0; channel < num_channels; channel++)
+            for (i = 0, j = 0; i < part; i++, j++) {
+               if (j == grain_size) j = 0;
+               dest_buf[num_channels * i + channel]
+                  = src_buf[num_channels * j + channel]
+                    * window(i, part);
             }
+            if (!is_le)
+               for (i = 0; i < part; i++)
+                  endrev16(&dest_buf[num_channels * i + channel]);
+
          result = fwrite(dest_buf, 2, dest_buf_len, dest);
          if (result != dest_buf_len) raise_err("Failed to write data.");
       }
