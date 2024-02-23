@@ -209,7 +209,7 @@ uint32_t process_wav(FILE *src,
          result = fread(src_buf, 2, buf_len, src);
          if (result != buf_len) break;
 
-         for (channel = 0; channel < num_channels; channel++)
+         for (channel = 0; channel < num_channels; channel++) {
             for (i = 0, j = 0; i < grain_size; i++, j += pitch_factor) {
                if (j >= grain_size) j = 0;
                dest_buf[num_channels * i + channel]
@@ -219,6 +219,7 @@ uint32_t process_wav(FILE *src,
             if (!is_le)
                for (i = 0; i < grain_size; i++)
                   endrev16(&dest_buf[num_channels * i + channel]);
+         }
 
          result = fwrite(dest_buf, 2, buf_len, dest);
          if (result != buf_len) raise_err("Failed to write data.");
@@ -240,7 +241,7 @@ uint32_t process_wav(FILE *src,
          result = fread(src_buf, 2, buf_len, src);
          if (result !=  buf_len) break;
 
-         for (channel = 0; channel < num_channels; channel++)
+         for (channel = 0; channel < num_channels; channel++) {
             for (i = 0, j = 0; i < part; i++, j++) {
                if (j == grain_size) j = 0;
                dest_buf[num_channels * i + channel]
@@ -250,6 +251,7 @@ uint32_t process_wav(FILE *src,
             if (!is_le)
                for (i = 0; i < part; i++)
                   endrev16(&dest_buf[num_channels * i + channel]);
+         }
 
          result = fwrite(dest_buf, 2, dest_buf_len, dest);
          if (result != dest_buf_len) raise_err("Failed to write data.");
