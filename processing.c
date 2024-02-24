@@ -36,7 +36,7 @@ static void _handle_fmt_subchunk(FILE *src,
    result = fread(&info->audio_format, 2, 1, src);
    if (result != 1) raise_err("Failed to read AudioFormat.");
    if (be) endrev16(&info->audio_format);
-   
+
    result = fread(&info->num_channels, 2, 1, src);
    if (result != 1) raise_err("Failed to read NumChannels.");
    if (be) endrev16(&info->num_channels);
@@ -116,7 +116,7 @@ void observe_wav(FILE *src,
       result = fread(&chunk_id, 4, 1, src);
       if (result != 1) raise_err("Failed to read ChunkID.");
       if (le) endrev32(&chunk_id);
-      
+
       result = fread(&chunk_size, 4, 1, src);
       if (result != 1) raise_err("Failed to read ChunkSize.");
       if (be) endrev32(&chunk_size);
@@ -247,7 +247,7 @@ static uint32_t _shift_pitch(FILE *src,
    int i;
    double j;
    int16_t *src_buf, *dest_buf;
-   
+
    result = fseek(dest, 44L, SEEK_SET);
    if (result != 0) raise_err("Failed to seek the file position.");
    src_buf = malloc(src_buf_len * 2);
@@ -265,7 +265,7 @@ static uint32_t _shift_pitch(FILE *src,
                j = 0;
             dest_buf[num_channels * i + channel]
                = src_buf[num_channels * (int) j + channel]
-               * window(i, grain_size);
+                 * window(i, grain_size);
          }
       if (!is_le)
             for (i = 0; i < dest_buf_len; i++)
@@ -275,7 +275,7 @@ static uint32_t _shift_pitch(FILE *src,
       if (result != dest_buf_len) raise_err("Failed to write data.");
    }
    if (ferror(src)) raise_err("Failed to read audio data.");
-   
+
    free(src_buf);
    free(dest_buf);
 
@@ -320,7 +320,7 @@ static uint32_t _stretch_time(FILE *src,
                j = 0;
             dest_buf[num_channels * i + channel]
                = src_buf[num_channels * j + channel]
-                  * window(i, part);
+                 * window(i, part);
          }
       if (!is_le)
          for (i = 0; i < dest_buf_len; i++)
@@ -330,7 +330,7 @@ static uint32_t _stretch_time(FILE *src,
       if (result != dest_buf_len) raise_err("Failed to write data.");
    }
    if (ferror(src)) raise_err("Failed to read audio data.");
-   
+
    free(src_buf);
    free(dest_buf);
 

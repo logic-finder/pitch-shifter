@@ -22,6 +22,6 @@ int main(int argc, char **argv) {
                     &info, sample_number, is_le);
    close_wav(src, dest);
    options->cleanup_execution_options(options->self);
-   
+
    return 0;
 }

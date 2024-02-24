@@ -110,7 +110,7 @@ void validate_execution(int argc, char **argv, struct execution_options *options
          handle_verbose_option(options);
       argv++;
    }
-   
+
    if (required_option_count == 4)
       return;
 
