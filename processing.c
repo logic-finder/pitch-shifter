@@ -198,17 +198,17 @@ void assess_wav_info(struct wav_info *info) {
    if (info->audio_format != 1)
       raise_err("Need AudioFormat = 1 (PCM).");
 
-   if (info->num_channels != 2)
-      raise_err("Need NumChannels = 2.");
+   if (info->num_channels > 2)
+      raise_err("Need NumChannels = 1 or 2.");
 
    if (info->sample_rate != 44100)
       raise_err("Need SampleRate = 44100.");
 
-   if (info->byte_rate != 176400)
-      raise_err("Need ByteRate = 176400.");
+   if (info->byte_rate != 88200 && info->byte_rate != 176400)
+      raise_err("Need ByteRate = 88200 or 176400.");
 
-   if (info->block_align != 4)
-      raise_err("Need BlockAlign = 4.");
+   if (info->block_align != 2 && info->block_align != 4)
+      raise_err("Need BlockAlign = 2 or 4.");
 
    if (info->bits_per_sample != 16)
       raise_err("Need BitsPerSample = 16.");
@@ -247,7 +247,6 @@ static uint32_t _shift_pitch(FILE *src,
    int i;
    double j;
    int16_t *src_buf, *dest_buf;
-   uint32_t sample_number;
    
    result = fseek(dest, 44L, SEEK_SET);
    if (result != 0) raise_err("Failed to seek the file position.");
@@ -276,20 +275,12 @@ static uint32_t _shift_pitch(FILE *src,
       if (result != dest_buf_len) raise_err("Failed to write data.");
    }
    if (ferror(src)) raise_err("Failed to read audio data.");
-
-   sample_number = unit * grain_size;
-   if (sample_number % 2 == 1) {
-      uint32_t padding = 0;
-
-      result = fwrite(&padding, 4, 1, dest);
-      if (result != 1) raise_err("Failed to write data.");
-      sample_number++;
-   }
    
    free(src_buf);
    free(dest_buf);
-   
-   return sample_number;
+
+   /* the number of total samples. */
+   return unit * grain_size;
 }
 
 static uint32_t _stretch_time(FILE *src,
@@ -311,7 +302,6 @@ static uint32_t _stretch_time(FILE *src,
    int unit, channel;
    int i, j;
    int16_t *src_buf, *dest_buf;
-   uint32_t sample_number;
 
    result = fseek(dest, 44L, SEEK_SET);
    if (result != 0) raise_err("Failed to seek the file position.");
@@ -341,19 +331,11 @@ static uint32_t _stretch_time(FILE *src,
    }
    if (ferror(src)) raise_err("Failed to read audio data.");
    
-   sample_number = unit * part;
-   if (sample_number % 2 == 1) {
-      uint32_t padding = 0;
-
-      result = fwrite(&padding, 4, 1, dest);
-      if (result != 1) raise_err("Failed to write data.");
-      sample_number++;
-   }
-   
    free(src_buf);
    free(dest_buf);
 
-   return sample_number;
+   /* the number of total samples. */
+   return unit * part;
 }
 
 uint32_t process_wav(FILE *src,
