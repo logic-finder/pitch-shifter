@@ -64,11 +64,7 @@ static void _handle_fmt_subchunk(FILE *src,
 }
 
 static void _handle_data_subchunk(struct wav_info *info,
-                                  bool is_le,
                                   uint32_t chunk_size) {
-   bool le = is_le;
-   bool be = !le;
-
    info->subchunk_2_id = DATA;
    info->subchunk_2_size = chunk_size;
 }
@@ -131,7 +127,7 @@ void observe_wav(FILE *src,
          }
          break;
          case DATA: {
-            _handle_data_subchunk(info, is_le, chunk_size);
+            _handle_data_subchunk(info, chunk_size);
             is_data_subchunk_found = true;
          }
          break;

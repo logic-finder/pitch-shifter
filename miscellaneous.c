@@ -39,17 +39,17 @@ static void _handle_common_task(char **dest, char *src, int limit) {
    strncpy(*dest, src, limit);
 }
 
-static void handle_src_option(char **dest, char *src, int *counter) {
+static void _handle_src_option(char **dest, char *src, int *counter) {
    _handle_common_task(dest, src, FILENAME_MAX);
    (*counter)++;
 }
 
-static void handle_dest_option(char **dest, char *src, int *counter) {
+static void _handle_dest_option(char **dest, char *src, int *counter) {
    _handle_common_task(dest, src, FILENAME_MAX);
    (*counter)++;
 }
 
-static void handle_mode_option(struct execution_options *options, char *src, int *counter) {
+static void _handle_mode_option(struct execution_options *options, char *src, int *counter) {
    _handle_common_task(&options->__mode, src, 6);
    options->__mode[5] = '\0';
    if (strncmp(options->__mode, PITCH, 5) == 0)
@@ -61,7 +61,7 @@ static void handle_mode_option(struct execution_options *options, char *src, int
    (*counter)++;
 }
 
-static void handle_factor_option(struct execution_options *options, char *src, int *counter) {
+static void _handle_factor_option(struct execution_options *options, char *src, int *counter) {
    char *indicator;
    
    _handle_common_task(&options->__factor, src, 5);
@@ -77,7 +77,7 @@ static void handle_factor_option(struct execution_options *options, char *src, i
    (*counter)++;
 }
 
-static void handle_size_option(struct execution_options *options, char *src) {
+static void _handle_size_option(struct execution_options *options, char *src) {
    _handle_common_task(&options->__size, src, 5);
    options->__size[4] = '\0';
    options->size = atoi(options->__size);
@@ -87,7 +87,7 @@ static void handle_size_option(struct execution_options *options, char *src) {
       raise_err("A %s value out of range: %s.", OP_SIZE, options->__size);
 }
 
-static void handle_verbose_option(struct execution_options *options) {
+static void _handle_verbose_option(struct execution_options *options) {
    options->verbose = true;
 }
 
@@ -97,17 +97,17 @@ void validate_execution(int argc, char **argv, struct execution_options *options
    argv++;  /* Skip the program name. */
    while (*argv != NULL) {
       if (strncmp(*argv, OP_SRC, strlen(OP_SRC)) == 0)
-         handle_src_option(&options->src_name, *(argv + 1), &required_option_count);
+         _handle_src_option(&options->src_name, *(argv + 1), &required_option_count);
       else if (strncmp(*argv, OP_DEST, strlen(OP_DEST)) == 0)
-         handle_dest_option(&options->dest_name, *(argv + 1), &required_option_count);
+         _handle_dest_option(&options->dest_name, *(argv + 1), &required_option_count);
       else if (strncmp(*argv, OP_MODE, strlen(OP_MODE)) == 0)
-         handle_mode_option(options, *(argv + 1), &required_option_count);
+         _handle_mode_option(options, *(argv + 1), &required_option_count);
       else if (strncmp(*argv, OP_FAC, strlen(OP_FAC)) == 0)
-         handle_factor_option(options, *(argv + 1), &required_option_count);
+         _handle_factor_option(options, *(argv + 1), &required_option_count);
       else if (strncmp(*argv, OP_SIZE, strlen(OP_SIZE)) == 0)
-         handle_size_option(options, *(argv + 1));
+         _handle_size_option(options, *(argv + 1));
       else if (strncmp(*argv, OP_VB, strlen(OP_VB)) == 0)
-         handle_verbose_option(options);
+         _handle_verbose_option(options);
       argv++;
    }
 
