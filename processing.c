@@ -145,7 +145,7 @@ void observe_wav(FILE *src,
       raise_err("An invalidly formatted .wav file.");
 }
 
-/* Note: This function does this task: 0x9798 --> "ab" */
+/* Note: This function does this task: 0x6162 --> "ab" */
 static void hex2fourCC(uint32_t hex, char *str) {
    int i;
 
