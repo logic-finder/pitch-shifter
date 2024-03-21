@@ -1,28 +1,8 @@
 #ifndef MISCELLANEOUS_H
 #define MISCELLANEOUS_H
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdarg.h>
-#include <stdbool.h>
-
-struct execution_options {
-   char *src_name;
-   char *dest_name;
-   int mode;
-   double factor;
-   int size;
-   bool verbose;
-   /**********/
-   char *__mode;
-   char *__factor;
-   char *__size;
-   /**********/
-   void (*cleanup_execution_options)(struct execution_options *);
-   void *(*_iterate_execution_options)(struct execution_options *, int);
-   struct execution_options *self;
-   int length;
-};
+#include <inttypes.h>
 
 /*
  * raise_err: This funciton prints an error to the
@@ -38,29 +18,16 @@ void raise_err(char *, ...);
 int get_endianness(void);
 
 /*
- * validate_execution: This function checks the command line
- * arguments.
+ * Note: These two functions reverse the byte
+ * order, namely endianness.
  */
-void validate_execution(int, char **, struct execution_options *);
+inline void endrev16(uint16_t *p) {
+   *p = *p << 8 | *p >> 8;
+}
 
-/*
- * open_wav: This function opens two streams for
- * the input wav file and the output wave file
- * before processings are to take place.
- */
-void open_wav(struct execution_options *, FILE **, FILE **);
-
-/*
- * close_wav: This function closes two streams for
- * the input wav file and the output wave file
- * after all processings have been done.
- */
-void close_wav(FILE *, FILE *);
-
-/*
- * realize_execution_options: This function creates
- * a new struct execution_options.
- */
-struct execution_options *realize_execution_options(void);
+inline void endrev32(uint32_t *p) {
+   *p = *p << 24 | (*p & 0x0000FF00) << 8 |
+        (*p & 0x00FF0000) >> 8 | (*p & 0xFF000000) >> 24;
+}
 
 #endif
