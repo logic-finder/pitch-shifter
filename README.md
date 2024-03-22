@@ -6,9 +6,10 @@ make
 ```
 ## Usage
 ```
-./process
-./process --verbose --src in.wav --dest out.wav --mode pitch --factor 1.06 --size 2205
+./process --help
+./process --src in.wav --dest out.wav --pitch 0.8
 ```
+<i>Note. in order to calculate a frequency: 2^(n/12).</i>
 <table>
    <thead>
       <tr>
@@ -17,36 +18,32 @@ make
    </thead>
    <tbody>
       <tr>
+         <td>--help</td>
+         <td>Display the manual that you are reading now.</td>
+      </tr>
+      <tr>
          <td>--src</td>
-         <td colspan="2">The name of the input .wav file.</td>
+         <td>The name of the input .wav file.</td>
       </tr>
       <tr>
          <td>--dest</td>
-         <td colspan="2">The name of the output .wav file.</td>
+         <td>The name of the output .wav file.</td>
       </tr>
       <tr>
-         <td rowspan="2">--mode</td>
-         <td>pitch</td>
-         <td>Modify pitch, meanwhile keeping speed the same.</td>
+         <td>--pitch</td>
+         <td>Modify pitch, meanwhile keeping speed the same. The value of 2 would yield 1 octave high.</td>
       </tr>
       <tr>
-         <td>speed</td>
-         <td>Modify speed, meanwhile keeping pitch the same.</td>
-      </tr>
-      <tr>
-         <td rowspan="2">--factor</td>
-         <td colspan="2">In case of pitch, the value of 2 would yield 1 octave high.</td>
-      </tr>
-      <tr>
-         <td colspan="2">In case of speed, the value of 2 would yield the doubled length.</td>
+         <td>--speed</td>
+         <td>Modify speed, meanwhile keeping pitch the same. The value of 2 would yield the doubled length.</td>
       </tr>
       <tr>
          <td>[--size]</td>
-         <td colspan="2">Assign a specific grain size.</td>
+         <td>Assign a specific grain size.</td>
       </tr>
       <tr>
          <td>[--verbose]</td>
-         <td colspan="2">Show input .wav file metadata.</td>
+         <td>Display the metadata of the input .wav file.</td>
       </tr>
    </tbody>
 </table>

@@ -3,9 +3,11 @@
 
 #include <stdbool.h>
 
-#define _LEN_EXECUTION_OPTIONS 5
+#define _LEN_EXECUTION_OPTIONS 0  /* except self */
 
 struct execution_options {
+   char *src_name;
+   char *dest_name;
    int mode;
    double factor;
    int size;
@@ -14,11 +16,6 @@ struct execution_options {
    void (*unrealize)(struct execution_options *);
    
    /* fields to be freed */
-   char *src_name;
-   char *dest_name;
-   char *_mode;
-   char *_factor;
-   char *_size;
    struct execution_options *self;
 };
 

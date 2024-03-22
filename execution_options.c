@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "execution_options.h"
 #include "miscellaneous.h"
@@ -23,11 +24,7 @@ struct execution_options *realize_execution_options(void) {
 
 static void *iterate(struct execution_options *objptr, int idx) {
    switch (idx) {
-      case 0: return objptr->src_name;
-      case 1: return objptr->dest_name;
-      case 2: return objptr->_mode;
-      case 3: return objptr->_factor;
-      case 4: return objptr->_size;
+      /* case 0: return objptr->ptr; */
       default:
          raise_err("Failed to access the field of struct execution_options.");
    }
