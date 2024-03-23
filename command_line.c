@@ -92,7 +92,7 @@ void inspect_execution_options(
 
 static void handle_help_option(void) {
    printf("Usage: ./process\n"
-          "  --help           Display the manual that you are reading now."
+          "  --help           Display the manual that you are reading now.\n"
           "  --src            The name of the input .wav file.\n"
           "  --dest           The name of the output .wav file.\n"
           "  --pitch          Modify pitch, meanwhile keeping speed the same.\n"
