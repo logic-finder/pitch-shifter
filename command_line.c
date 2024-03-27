@@ -34,6 +34,11 @@ void inspect_execution_options(
    unsigned int checklist = 0;  /* bit-field */
    int indicator = 0;
 
+   if (argc == 1)
+      raise_err(
+         "Some command line arguments are required to run.\n"
+         "Enter ./process --help to check such arguments.");
+
    argv++;  /* Skip the program name. */
    if (strncmp(*argv, OP_HELP, strlen(OP_HELP)) == 0) {
       handle_help_option();
