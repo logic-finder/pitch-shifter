@@ -5,6 +5,23 @@
 #include <inttypes.h>
 
 /*
+ * endrev16: This function reverses the byte order,
+ * namely endianness, for an uint16_t number.
+ */
+inline void endrev16(uint16_t *p) {
+   *p = *p << 8 | *p >> 8;
+}
+
+/*
+ * endrev32: This function reverses the byte order,
+ * namely endianness, for an uint32_t number.
+ */
+inline void endrev32(uint32_t *p) {
+   *p = *p << 24 | (*p & 0x0000FF00) << 8 |
+        (*p & 0x00FF0000) >> 8 | (*p & 0xFF000000) >> 24;
+}
+
+/*
  * raise_err: This funciton prints an error to the
  * stderr stream.
  */
@@ -18,16 +35,16 @@ void raise_err(char *, ...);
 int get_endianness(void);
 
 /*
- * Note: These two functions reverse the byte
- * order, namely endianness.
+ * count_digit: This function counts how many digits
+ * the number consists of.
  */
-inline void endrev16(uint16_t *p) {
-   *p = *p << 8 | *p >> 8;
-}
+int count_digit(uint32_t number);
 
-inline void endrev32(uint32_t *p) {
-   *p = *p << 24 | (*p & 0x0000FF00) << 8 |
-        (*p & 0x00FF0000) >> 8 | (*p & 0xFF000000) >> 24;
-}
+/*
+ * print_progress_bar: This function displays how much of the
+ * work has been done.
+ */
+void print_progress_bar(
+   uint32_t current, uint32_t total, int total_digit);
 
 #endif

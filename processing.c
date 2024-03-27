@@ -59,11 +59,13 @@ static uint32_t shift_pitch(
    uint32_t total_unit = total_sample / grain_size;
    int src_buf_len = grain_size * num_channels;
    int dest_buf_len = src_buf_len;
+   int total_uint_digit = count_digit(total_unit);
 
    int result;
-   int unit, channel;
    int i;
    double j;
+   int channel;
+   uint32_t unit;
    int16_t *src_buf, *dest_buf;
 
    result = fseek(dest, 44L, SEEK_SET);
@@ -91,6 +93,8 @@ static uint32_t shift_pitch(
 
       result = fwrite(dest_buf, 2, dest_buf_len, dest);
       if (result != dest_buf_len) raise_err("Failed to write data.");
+
+      print_progress_bar(unit + 1, total_unit, total_uint_digit);
    }
    if (ferror(src)) raise_err("Failed to read audio data.");
 
@@ -117,10 +121,12 @@ static uint32_t stretch_time(
    uint32_t total_unit = total_sample / grain_size;
    int src_buf_len = grain_size * num_channels;
    int dest_buf_len = part * num_channels;
+   int total_uint_digit = count_digit(total_unit);
 
    int result;
-   int unit, channel;
    int i, j;
+   int channel;
+   uint32_t unit;
    int16_t *src_buf, *dest_buf;
 
    result = fseek(dest, 44L, SEEK_SET);
@@ -148,6 +154,8 @@ static uint32_t stretch_time(
 
       result = fwrite(dest_buf, 2, dest_buf_len, dest);
       if (result != dest_buf_len) raise_err("Failed to write data.");
+
+      print_progress_bar(unit + 1, total_unit, total_uint_digit);
    }
    if (ferror(src)) raise_err("Failed to read audio data.");
 
