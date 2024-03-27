@@ -13,8 +13,11 @@
  * Also, it writes the processed results to the output wav file.
  */
 uint32_t process_audio_data(
-   FILE *, FILE *,
-   struct wav_info *, struct execution_options *,
-   bool);
+   FILE *src,
+   FILE *dest,
+   struct wav_info *info,
+   struct execution_options *options,
+   bool is_le
+);
 
 #endif

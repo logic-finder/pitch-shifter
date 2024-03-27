@@ -25,7 +25,7 @@ inline void endrev32(uint32_t *p) {
  * raise_err: This funciton prints an error to the
  * stderr stream.
  */
-void raise_err(char *, ...);
+void raise_err(char *err_msg, ...);
 
 /*
  * get_endianness: This function checks which endianness
