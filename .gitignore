@@ -2,3 +2,4 @@
 process
 /in
 /out
+.env

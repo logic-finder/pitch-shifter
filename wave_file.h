@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include "execution_options.h"
+#include "env_data.h"
 
 struct wav_info {
    uint32_t chunk_id;
@@ -53,7 +54,8 @@ void write_wav_header(
    FILE *dest,
    struct wav_info *info,
    uint32_t sample_number,
-   bool is_le
+   bool is_le,
+   char *dest_path
 );
 
 /*
@@ -61,8 +63,9 @@ void write_wav_header(
  * the input wav file and the output wave file
  * before processings are to take place.
  */
-void open_wav(
+char *open_wav(
    struct execution_options *options,
+   struct env_data *env,
    FILE **src,
    FILE **dest
 );

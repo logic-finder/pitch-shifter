@@ -5,20 +5,21 @@
 #include "command_line.h"
 #include "miscellaneous.h"
 
-#define OP_SRC   "--src"
-#define OP_DEST  "--dest"
-#define OP_PITCH "--pitch"
-#define OP_SPEED "--speed"
-#define OP_SIZE  "--size"
-#define OP_VB    "--verbose"
-#define OP_HELP  "--help"
+#define SUPPRESSION_CHAR '*'
+#define OP_SRC       "--src"
+#define OP_DEST      "--dest"
+#define OP_PITCH     "--pitch"
+#define OP_SPEED     "--speed"
+#define OP_SIZE      "--size"
+#define OP_VB        "--verbose"
+#define OP_HELP      "--help"
 #define MAX_FACTOR_VALUE 3
 #define MIN_SIZE_VALUE 2205
 #define MAX_SIZE_VALUE 8820
 
 static void handle_help_option(void);
-static void handle_src_option(struct execution_options *, char *, unsigned int *);
-static void handle_dest_option(struct execution_options *, char *, unsigned int *);
+static void handle_src_option(struct execution_options *, char **, unsigned int *);
+static void handle_dest_option(struct execution_options *, char **, unsigned int *);
 static void handle_pitch_option(struct execution_options *, char *, unsigned int *);
 static void handle_speed_option(struct execution_options *, char *, unsigned int *);
 static void handle_size_option(struct execution_options *, char *);
@@ -46,11 +47,11 @@ void inspect_execution_options(
    }
    while (*argv != NULL) {
       if (strncmp(*argv, OP_SRC, strlen(OP_SRC)) == 0) {
-         handle_src_option(options, *(argv + 1), &checklist);
+         handle_src_option(options, argv, &checklist);
          argv++;
       }
       else if (strncmp(*argv, OP_DEST, strlen(OP_DEST)) == 0) {
-         handle_dest_option(options, *(argv + 1), &checklist);
+         handle_dest_option(options, argv, &checklist);
          argv++;
       }
       else if (strncmp(*argv, OP_PITCH, strlen(OP_PITCH)) == 0) {
@@ -109,25 +110,54 @@ static void handle_help_option(void) {
    printf("(Example) ./process --src in.wav --dest out.wav --pitch 0.8\n");
 }
 
+/* Note: last character */
+inline static int lastch(const char *s) {
+   return s[strlen(s) - 1];
+}
+
 static void handle_src_option(
    struct execution_options *options,
-   char *src,
+   char **argv,
    unsigned int *checklist
 ) {
-   if (src == NULL)
+   char *option_name = argv[0];
+   char *option_value = argv[1];
+   int difference = strlen(option_name) - strlen(OP_SRC);
+
+   if (difference > 1)
+      handle_unknown_argument(option_name);
+   if (difference == 1)
+      if (lastch(option_name) != SUPPRESSION_CHAR)
+         handle_unknown_argument(option_name);
+      else
+         options->suppress_src_path = true;
+   if (option_value == NULL)
       raise_err("Failed to get data for this option: %s.", OP_SRC);
-   options->src_name = src;
+   
+   options->src_name = option_value;
    *checklist |= 1 << 0;
 }
 
 static void handle_dest_option(
    struct execution_options *options,
-   char *src,
+   char **argv,
    unsigned int *checklist
 ) {
-   if (src == NULL)
+   char *option_name = argv[0];
+   char *option_value = argv[1];
+   int difference = strlen(option_name) - strlen(OP_DEST);
+
+   if (difference > 1)
+      handle_unknown_argument(option_name);
+   if (difference == 1)
+      if (lastch(option_name) != SUPPRESSION_CHAR)
+         handle_unknown_argument(option_name);
+      else
+         options->suppress_dest_path = true;
+   if (option_value == NULL)
       raise_err("Failed to get data for this option: %s.", OP_DEST);
-   options->dest_name = src;
+
+   options->dest_name = option_value;
    *checklist |= 1 << 1;
 }
 

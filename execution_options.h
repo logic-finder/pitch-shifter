@@ -3,8 +3,6 @@
 
 #include <stdbool.h>
 
-#define _LEN_EXECUTION_OPTIONS 0  /* except self */
-
 struct execution_options {
    char *src_name;
    char *dest_name;
@@ -12,6 +10,8 @@ struct execution_options {
    double factor;
    int size;
    bool verbose;
+   bool suppress_src_path;
+   bool suppress_dest_path;
    
    void (*unrealize)(struct execution_options *);
    

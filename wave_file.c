@@ -1,4 +1,7 @@
 #include <limits.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include "wave_file.h"
 #include "miscellaneous.h"
 
@@ -155,22 +158,21 @@ static void hex2fourCC(uint32_t hex, char *str) {
 void show_wav_info(char *file_name, struct wav_info *info) {
    char fourCC[5] = {0};
 
-   printf("Successful read of %s.\n", file_name);
-   printf("The metadata of this file:\n");
+   printf("Successful read of %s; its metadata:\n", file_name);
    hex2fourCC(info->chunk_id, fourCC);
    printf("  ChunkID = %s\n", fourCC);
-   printf("  ChunkSize = %d (byte)\n", info->chunk_size);
+   printf("  ChunkSize = %d (bytes)\n", info->chunk_size);
    hex2fourCC(info->format, fourCC);
    printf("  Format = %s\n", fourCC);
    hex2fourCC(info->subchunk_1_id, fourCC);
    printf("  SubChunk1ID = %s\n", fourCC);
-   printf("  SubChunk1Size = %d (byte)\n", info->subchunk_1_size);
+   printf("  SubChunk1Size = %d (bytes)\n", info->subchunk_1_size);
    printf("  AudioFormat = %d %s",
           info->audio_format, info->audio_format == 1 ? "(PCM)\n" : "\n");
    printf("  NumChannels = %d\n", info->num_channels);
    printf("  SampleRate = %d\n", info->sample_rate);
    printf("  ByteRate = %d\n", info->byte_rate);
-   printf("  BlockAlign = %d (byte)\n", info->block_align);
+   printf("  BlockAlign = %d (bytes)\n", info->block_align);
    printf("  BitsPerSample = %d\n", info->bits_per_sample);
    hex2fourCC(info->subchunk_2_id, fourCC);
    printf("  SubChunk2ID = %s\n", fourCC);
@@ -213,7 +215,8 @@ void write_wav_header(
    FILE *dest,
    struct wav_info *info,
    uint32_t sample_number,
-   bool is_le
+   bool is_le,
+   char *dest_path
 ) {
    int result;
    bool le = is_le;
@@ -280,25 +283,61 @@ void write_wav_header(
    result = fwrite(&subchunk_2_size, 4, 1, dest);
    if (result != 1) raise_err("Failed to write Subchunk2Size.");
 
-   printf("\a\nDone: %" PRId32 " (byte)\n", 44 + subchunk_2_size);
+   printf("\a\nDone: %s, %" PRId32 " (bytes)\n",
+      dest_path, 44 + subchunk_2_size);
 }
 
-void open_wav(
+char *open_wav(
    struct execution_options *options,
+   struct env_data *env,
    FILE **src,
    FILE **dest
 ) {
-   *src = fopen(options->src_name, "rb");
-   if (*src == NULL) raise_err("Failed to open the file.");
-   *dest = fopen(options->dest_name, "wb");
-   if (dest == NULL) raise_err("Failed to open the file.");
+   char *sp = env->src_path, *dp = env->dest_path;
+   char *sn = options->src_name, *dn = options->dest_name;
+   char *src_path_full, *dest_path_full;
+
+   src_path_full = malloc(strlen(sp) + strlen(sn) + 1);
+   if (src_path_full == NULL)
+      raise_err("Failed to allocate memory dynamically.");
+   if (options->suppress_src_path) {
+      strncpy(src_path_full, CURRENT_DIR, 3);
+      strncat(src_path_full, sn, strlen(sn));
+   }
+   else {
+      strncpy(src_path_full, sp, strlen(sp) + 1);
+      strncat(src_path_full, sn, strlen(sn));   /* Note: strncat always puts
+                                                   \0 at the end. */
+   }
+   *src = fopen(src_path_full, "rb");
+   if (*src == NULL)
+      raise_err("Failed to open the requested file from %s.",
+         src_path_full);
+
+   dest_path_full = malloc(strlen(dp) + strlen(dn) + 1);
+   if (dest_path_full == NULL)
+      raise_err("Failed to allocate memory dynamically.");
+   if (options->suppress_dest_path) {
+      strncpy(dest_path_full, CURRENT_DIR, 3);
+      strncat(dest_path_full, dn, strlen(dn));
+   }
+   else {  
+      strncpy(dest_path_full, dp, strlen(dp) + 1);
+      strncat(dest_path_full, dn, strlen(dn));
+   }
+   *dest = fopen(dest_path_full, "wb");
+   if (*dest == NULL)
+      raise_err("Failed to open the requested file from %s.",
+         dest_path_full);
+
+   return dest_path_full;
 }
 
 void close_wav(FILE *src, FILE *dest) {
    int result;
 
    result = fclose(src);
-   if (result == EOF) raise_err("Failed to close the file.");
+   if (result == EOF) raise_err("Failed to close the source wav file.", 123);
    result = fclose(dest);
-   if (result == EOF) raise_err("Failed to close the file.");
+   if (result == EOF) raise_err("Failed to close the destination wav file.");
 }
