@@ -60,7 +60,9 @@ make
 ### About .env File
 I found it inconvenient that I had to type the paths to .wav files all the time. From this reason, I've had the program read .env file where the pre-defined --src and --dest paths are written. Meanwhile, it would be helpful to use '*' character if it is desired to provide a full path manually.
 ```c
-/* Suppose that .wav files are in ./src directory, but I do not want to type 'src/' every time in front of .wav files. */
+/* Suppose that .wav files are in ./src directory,
+   but I do not want to type 'src/' every time in
+   front of .wav files. */
 
 /* without .env file */
 ./pitsh --src src/music.wav --dest dest/result.wav --pitch 1.06
@@ -71,7 +73,9 @@ DEST_PATH   dest/
 
 ./pitsh --src music.wav --dest result.wav --pitch 1.06
 
-/* If I want to search from a different directory, I can put the asterisk right after --src (= -S) command so that I can ignore the SRC_PATH. */
+/* If I want to search from a different directory,
+   I can put the asterisk right after --src (= -S)
+   command so that I can ignore the SRC_PATH. */
 ./pitsh --src* other_dir/music.wav --dest result.wav --pitch 1.06
 
 /* this 'suppression' can be applied to --dest (= -D) also. */
