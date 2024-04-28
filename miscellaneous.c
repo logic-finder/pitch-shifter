@@ -32,16 +32,21 @@ int count_digit(uint32_t number) {
    return count;
 }
 
+static void move_cursor_to_line_start(int n) {
+   for (int i = 0; i < n; i++)
+      putchar('\b');
+}
+
 void print_progress_bar(uint32_t current, uint32_t total, int total_digit) {
    int i;
    int progress_percent = (current * 100 / total);
    int progress = progress_percent / 5;
    int remains = 20 - progress;
-   
+
    /* In progress: [***************-----] _75% (_750/1000) */
 
-   /* move the cursor to the line start */
-   printf("\033[%dD", 44 + total_digit * 2);
+   /* printf("\033[%dD", 44 + total_digit * 2); */
+   move_cursor_to_line_start(44 + total_digit * 2);
    fputs("In progress: [", stdout);
    for (i = 0; i < progress; i++)
       putchar('*');

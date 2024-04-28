@@ -10,6 +10,10 @@
 #define COMMENT   '#'
 #define SRC_PATH  "SRC_PATH"
 #define DEST_PATH "DEST_PATH"
+#define READLINE_READ_ERROR   -1
+#define READLINE_EOF          -2
+#define READLINE_EMPTY_LINE   -3
+#define READLINE_LONG_LINE    -4
 
 static int read_line(char * restrict, int, FILE * restrict);
 static int handle_src_path_field(struct env_data *, char *, int, int *);
@@ -33,21 +37,18 @@ void read_env(struct env_data *env, struct execution_options *options) {
    for (line_count = 1; ; line_count++) {
       result = read_line(line, ENVFILE_LINE_MAX + 1, envfile);
 
-      if (result == -1) {  /* read error */
-         result = fclose(envfile);
-         if (result == EOF)
-            raise_err("Failed to close the .env file stream.");
-         raise_err("An error occured while reading from the .env file stream.");
-      }
-      if (result == -2)    /* eof */
+      if (result == READLINE_READ_ERROR)
+         raise_err(
+            "%s: An error occured while reading from the .env file stream.", __func__);
+      if (result == READLINE_EOF)
          break;
-      if (result == -3)    /* empty line */
+      if (result == READLINE_EMPTY_LINE)
          continue;
 
       field_name = strtok(line, " \t\0");   /* I think this call will always succeed. */
       if (field_name[0] == COMMENT)
          continue;
-      if (result == -4) {  /* long line */
+      if (result == READLINE_LONG_LINE) {
          is_error = true;
          fprintf(stderr, "Line %d is too long to process.\n", line_count);
          continue;
@@ -74,7 +75,7 @@ void read_env(struct env_data *env, struct execution_options *options) {
 
    result = fclose(envfile);
    if (result == EOF)
-      raise_err("Failed to close the .env file stream.");
+      raise_err("%s: Failed to close the .env file stream.", __func__);
 
    if (is_error) {
       printf("test\n");
@@ -94,18 +95,20 @@ static int read_line(
    int i, result, ch;
 
    if (n < 2)
-      raise_err("The second argument = %d < 2.");
+      raise_err("%s: The second argument = %d < 2.", __func__, n);
    if (n > ENVFILE_LINE_MAX + 1)
-      raise_err("The second argument = n > %d.", ENVFILE_LINE_MAX + 1);
+      raise_err(
+         "%s: The second argument = %d > %d.",
+         __func__, n, ENVFILE_LINE_MAX + 1);
    
    /* Skip (if any) white space character(s) at the front of the line. */
    while (isspace(ch = getc(stream)) && ch != '\n');
    if (ferror(stream))
-      return -1;
+      return READLINE_READ_ERROR;
    if (feof(stream))
-      return -2;
+      return READLINE_EOF;
    if (ch == '\n')
-      return -3;
+      return READLINE_EMPTY_LINE;
    ungetc(ch, stream);  /* This call is guaranteed to succeed. */
 
    /* Save N-1 characters at most and \0 at the last
@@ -117,14 +120,14 @@ static int read_line(
       i++;
    }
    if (ferror(stream))
-      return -3;
+      return READLINE_READ_ERROR;
 
    if (i > n - 1)
       s[n - 1] = '\0';
    else
       s[i] = '\0';
 
-   return i <= n - 1 ? 0 : -4;
+   return i <= n - 1 ? 0 : READLINE_LONG_LINE;
 }
 
 static int handle_src_path_field(

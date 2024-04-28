@@ -13,7 +13,7 @@ struct execution_options *realize_execution_options(void) {
 
    objptr = malloc(sizeof(struct execution_options));
    if (objptr == NULL)
-      raise_err("Failed to create a new struct execution_options.");
+      raise_err("%s: Failed to create a new struct execution_options.", __func__);
    objptr->self = objptr;
    objptr->unrealize = unrealize;
    objptr->size = DEFAULT_SIZE;
@@ -28,7 +28,8 @@ static void *iterate(struct execution_options *objptr, int idx) {
    switch (idx) {
       /* case 0: return objptr->ptr; */
       default:
-         raise_err("Failed to access the field of struct execution_options.");
+         raise_err(
+            "%s: Failed to access the field of struct execution_options.", __func__);
    }
 }
 

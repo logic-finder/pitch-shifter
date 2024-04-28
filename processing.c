@@ -69,11 +69,14 @@ static uint32_t shift_pitch(
    int16_t *src_buf, *dest_buf;
 
    result = fseek(dest, 44L, SEEK_SET);
-   if (result != 0) raise_err("Failed to seek the file position.");
+   if (result != 0)
+      raise_err("%s: Failed to seek the file position.", __func__);
    src_buf = malloc(src_buf_len * 2);
-   if (src_buf == NULL) raise_err("Failed to allocate memory dynamically.");
+   if (src_buf == NULL)
+      raise_err("%s: Failed to allocate memory dynamically.", __func__);
    dest_buf = malloc(dest_buf_len * 2);
-   if (dest_buf == NULL) raise_err("Failed to allocate memory dynamically.");
+   if (dest_buf == NULL)
+      raise_err("%s: Failed to allocate memory dynamically.", __func__);
 
    for (unit = 0; unit < total_unit; unit++) {
       result = fread(src_buf, 2, src_buf_len, src);
@@ -92,11 +95,13 @@ static uint32_t shift_pitch(
                endrev16(&dest_buf[i]);
 
       result = fwrite(dest_buf, 2, dest_buf_len, dest);
-      if (result != dest_buf_len) raise_err("Failed to write data.");
+      if (result != dest_buf_len)
+         raise_err("%s: Failed to write data.", __func__);
 
       print_progress_bar(unit + 1, total_unit, total_uint_digit);
    }
-   if (ferror(src)) raise_err("Failed to read audio data.");
+   if (ferror(src))
+      raise_err("%s: Failed to read audio data.", __func__);
 
    free(src_buf);
    free(dest_buf);
@@ -130,11 +135,14 @@ static uint32_t stretch_time(
    int16_t *src_buf, *dest_buf;
 
    result = fseek(dest, 44L, SEEK_SET);
-   if (result != 0) raise_err("Failed to seek the file position.");
+   if (result != 0)
+      raise_err("%s: Failed to seek the file position.", __func__);
    src_buf = malloc(src_buf_len * 2);
-   if (src_buf == NULL) raise_err("Failed to allocate memory dynamically.");
+   if (src_buf == NULL)
+      raise_err("%s: Failed to allocate memory dynamically.", __func__);
    dest_buf = malloc(dest_buf_len * 2);
-   if (dest_buf == NULL) raise_err("Failed to allocate memory dynamically.");
+   if (dest_buf == NULL)
+      raise_err("%s: Failed to allocate memory dynamically.", __func__);
 
    for (unit = 0; unit < total_unit; unit++) {
       result = fread(src_buf, 2, src_buf_len, src);
@@ -153,11 +161,13 @@ static uint32_t stretch_time(
             endrev16(&dest_buf[i]);
 
       result = fwrite(dest_buf, 2, dest_buf_len, dest);
-      if (result != dest_buf_len) raise_err("Failed to write data.");
+      if (result != dest_buf_len)
+         raise_err("%s: Failed to write data.", __func__);
 
       print_progress_bar(unit + 1, total_unit, total_uint_digit);
    }
-   if (ferror(src)) raise_err("Failed to read audio data.");
+   if (ferror(src))
+      raise_err("%s: Failed to read audio data.", __func__);
 
    free(src_buf);
    free(dest_buf);

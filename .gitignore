@@ -1,5 +1,5 @@
 *.o
-process
+pitsh
 /in
 /out
 .env

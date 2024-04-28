@@ -30,15 +30,15 @@ void observe_wav(
    uint32_t chunk_id, chunk_size;
 
    result = fread(&info->chunk_id, 4, 1, src);
-   if (result != 1) raise_err("Failed to read RIFF.");
+   if (result != 1) raise_err("%s: Failed to read RIFF.", __func__);
    if (le) endrev32(&info->chunk_id);
    
    result = fread(&info->chunk_size, 4, 1, src);
-   if (result != 1) raise_err("Failed to read the size of the RIFF chunk.");
+   if (result != 1) raise_err("%s: Failed to read the size of the RIFF chunk.", __func__);
    if (be) endrev32(&info->chunk_size);
    
    result = fread(&info->format, 4, 1, src);
-   if (result != 1) raise_err("Failed to read WAVE.");
+   if (result != 1) raise_err("%s: Failed to read WAVE.", __func__);
    if (le) endrev32(&info->format);
 
    /*
@@ -47,15 +47,15 @@ void observe_wav(
     */
    while (!is_data_subchunk_found) {
       result = fread(&chunk_id, 4, 1, src);
-      if (result != 1) raise_err("Failed to read ChunkID.");
+      if (result != 1) raise_err("%s: Failed to read ChunkID.", __func__);
       if (le) endrev32(&chunk_id);
 
       result = fread(&chunk_size, 4, 1, src);
-      if (result != 1) raise_err("Failed to read ChunkSize.");
+      if (result != 1) raise_err("%s: Failed to read ChunkSize.", __func__);
       if (be) endrev32(&chunk_size);
 
       if (chunk_size > LONG_MAX)
-            raise_err("A file too big: I wouldn't like to process this file.");
+            raise_err("%s: A file too big: I wouldn't like to process this file.", __func__);
 
       switch (chunk_id) {
          case FMT: {
@@ -73,13 +73,13 @@ void observe_wav(
          break;
          default: {
             result = fseek(src, chunk_size, SEEK_CUR);
-            if (result != 0) raise_err("Failed to seek the file position.");
+            if (result != 0) raise_err("%s: Failed to seek the file position.", __func__);
          }
       }
    }
 
    if (!is_fmt_subchunk_found)
-      raise_err("An invalidly formatted .wav file.");
+      raise_err("%s: An invalidly formatted .wav file.", __func__);
 }
 
 static void handle_fmt_subchunk(
@@ -96,32 +96,32 @@ static void handle_fmt_subchunk(
    info->subchunk_1_size = chunk_size;
 
    result = fread(&info->audio_format, 2, 1, src);
-   if (result != 1) raise_err("Failed to read AudioFormat.");
+   if (result != 1) raise_err("%s: Failed to read AudioFormat.", __func__);
    if (be) endrev16(&info->audio_format);
 
    result = fread(&info->num_channels, 2, 1, src);
-   if (result != 1) raise_err("Failed to read NumChannels.");
+   if (result != 1) raise_err("%s: Failed to read NumChannels.", __func__);
    if (be) endrev16(&info->num_channels);
 
    result = fread(&info->sample_rate, 4, 1, src);
-   if (result != 1) raise_err("Failed to read SampleRate.");
+   if (result != 1) raise_err("%s: Failed to read SampleRate.", __func__);
    if (be) endrev32(&info->sample_rate);
 
    result = fread(&info->byte_rate, 4, 1, src);
-   if (result != 1) raise_err("Failed to read ByteRate.");
+   if (result != 1) raise_err("%s: Failed to read ByteRate.", __func__);
    if (be) endrev32(&info->byte_rate);
 
    result = fread(&info->block_align, 2, 1, src);
-   if (result != 1) raise_err("Failed to read BlockAlign.");
+   if (result != 1) raise_err("%s: Failed to read BlockAlign.", __func__);
    if (be) endrev16(&info->block_align);
 
    result = fread(&info->bits_per_sample, 2, 1, src);
-   if (result != 1) raise_err("Failed to read BitsPerSample.");
+   if (result != 1) raise_err("%s: Failed to read BitsPerSample.", __func__);
    if (be) endrev16(&info->bits_per_sample);
 
    if (chunk_size == 18 || chunk_size == 40) {
       result = fseek(src, chunk_size - 16, SEEK_CUR);
-      if (result != 0) raise_err("Failed to seek the file position.");
+      if (result != 0) raise_err("%s: Failed to seek the file position.", __func__);
    }
 }
 
@@ -144,7 +144,7 @@ static void handle_list_chunk(
       printf("A LIST chunk has been found but ignored.\n");
 
    result = fseek(src, chunk_size, SEEK_CUR);
-   if (result != 0) raise_err("Failed to seek the file position.");
+   if (result != 0) raise_err("%s: Failed to seek the file position.", __func__);
 }
 
 /* Note: This function does this task: 0x6162 --> "ab" */
@@ -181,34 +181,34 @@ void show_wav_info(char *file_name, struct wav_info *info) {
 
 void assess_wav_info(struct wav_info *info) {
    if (info->chunk_id != RIFF)
-      raise_err("Need ChunkID = RIFF.");
+      raise_err("%s: Need ChunkID = RIFF.", __func__);
 
    if (info->format != WAVE)
-      raise_err("Need Format = WAVE.");
+      raise_err("%s: Need Format = WAVE.", __func__);
 
    if (info->subchunk_1_id != FMT)
-      raise_err("Need SubChunk1ID = FMT_");
+      raise_err("%s: Need SubChunk1ID = FMT_", __func__);
 
    if (info->subchunk_1_size != 16)
-      raise_err("Need SubChunk1Size = 16");
+      raise_err("%s: Need SubChunk1Size = 16", __func__);
 
    if (info->audio_format != 1)
-      raise_err("Need AudioFormat = 1 (PCM).");
+      raise_err("%s: Need AudioFormat = 1 (PCM).", __func__);
 
    if (info->num_channels > 2)
-      raise_err("Need NumChannels = 1 or 2.");
+      raise_err("%s: Need NumChannels = 1 or 2.", __func__);
 
    if (info->sample_rate != 44100)
-      raise_err("Need SampleRate = 44100.");
+      raise_err("%s: Need SampleRate = 44100.", __func__);
 
    if (info->byte_rate != 88200 && info->byte_rate != 176400)
-      raise_err("Need ByteRate = 88200 or 176400.");
+      raise_err("%s: Need ByteRate = 88200 or 176400.", __func__);
 
    if (info->block_align != 2 && info->block_align != 4)
-      raise_err("Need BlockAlign = 2 or 4.");
+      raise_err("%s: Need BlockAlign = 2 or 4.", __func__);
 
    if (info->bits_per_sample != 16)
-      raise_err("Need BitsPerSample = 16.");
+      raise_err("%s: Need BitsPerSample = 16.", __func__);
 }
 
 void write_wav_header(
@@ -233,55 +233,55 @@ void write_wav_header(
 
    if (le) endrev32(&info->chunk_id);
    result = fwrite(&info->chunk_id, 4, 1, dest);
-   if (result != 1) raise_err("Failed to write ChunkID.");
+   if (result != 1) raise_err("%s: Failed to write ChunkID.", __func__);
 
    if (be) endrev32(&chunk_size);
    result = fwrite(&chunk_size, 4, 1, dest);
-   if (result != 1) raise_err("Failed to write ChunkSize.");
+   if (result != 1) raise_err("%s: Failed to write ChunkSize.", __func__);
 
    if (le) endrev32(&info->format);
    result = fwrite(&info->format, 4, 1, dest);
-   if (result != 1) raise_err("Failed to write Format.");
+   if (result != 1) raise_err("%s: Failed to write Format.", __func__);
 
    if (le) endrev32(&info->subchunk_1_id);
    result = fwrite(&info->subchunk_1_id, 4, 1, dest);
-   if (result != 1) raise_err("Failed to write Subchunk1ID.");
+   if (result != 1) raise_err("%s: Failed to write Subchunk1ID.", __func__);
 
    if (be) endrev32(&info->subchunk_1_size);
    result = fwrite(&info->subchunk_1_size, 4, 1, dest);
-   if (result != 1) raise_err("Failed to write Subchunk1Size.");
+   if (result != 1) raise_err("%s: Failed to write Subchunk1Size.", __func__);
 
    if (be) endrev16(&info->audio_format);
    result = fwrite(&info->audio_format, 2, 1, dest);
-   if (result != 1) raise_err("Failed to write AudioFormat.");
+   if (result != 1) raise_err("%s: Failed to write AudioFormat.", __func__);
 
    if (be) endrev16(&info->num_channels);
    result = fwrite(&info->num_channels, 2, 1, dest);
-   if (result != 1) raise_err("Failed to write NumChannels.");
+   if (result != 1) raise_err("%s: Failed to write NumChannels.", __func__);
 
    if (be) endrev32(&info->sample_rate);
    result = fwrite(&info->sample_rate, 4, 1, dest);
-   if (result != 1) raise_err("Failed to write SampleRate.");
+   if (result != 1) raise_err("%s: Failed to write SampleRate.", __func__);
 
    if (be) endrev32(&info->byte_rate);
    result = fwrite(&info->byte_rate, 4, 1, dest);
-   if (result != 1) raise_err("Failed to write ByteRate.");
+   if (result != 1) raise_err("%s: Failed to write ByteRate.", __func__);
 
    if (be) endrev16(&info->block_align);
    result = fwrite(&info->block_align, 2, 1, dest);
-   if (result != 1) raise_err("Failed to write BlockAlign.");
+   if (result != 1) raise_err("%s: Failed to write BlockAlign.", __func__);
 
    if (be) endrev16(&info->bits_per_sample);
    result = fwrite(&info->bits_per_sample, 2, 1, dest);
-   if (result != 1) raise_err("Failed to write BitsPerSample.");
+   if (result != 1) raise_err("%s: Failed to write BitsPerSample.", __func__);
 
    if (le) endrev32(&info->subchunk_2_id);
    result = fwrite(&info->subchunk_2_id, 4, 1, dest);
-   if (result != 1) raise_err("Failed to write Subchunk2ID.");
+   if (result != 1) raise_err("%s: Failed to write Subchunk2ID.", __func__);
 
    if (be) endrev32(&subchunk_2_size);
    result = fwrite(&subchunk_2_size, 4, 1, dest);
-   if (result != 1) raise_err("Failed to write Subchunk2Size.");
+   if (result != 1) raise_err("%s: Failed to write Subchunk2Size.", __func__);
 
    printf("\a\nDone: %s, %" PRId32 " (bytes)\n",
       dest_path, 44 + subchunk_2_size);
@@ -299,24 +299,24 @@ char *open_wav(
 
    src_path_full = malloc(strlen(sp) + strlen(sn) + 1);
    if (src_path_full == NULL)
-      raise_err("Failed to allocate memory dynamically.");
+      raise_err("%s: Failed to allocate memory dynamically.", __func__);
    if (options->suppress_src_path) {
       strncpy(src_path_full, CURRENT_DIR, 3);
       strncat(src_path_full, sn, strlen(sn));
    }
    else {
       strncpy(src_path_full, sp, strlen(sp) + 1);
-      strncat(src_path_full, sn, strlen(sn));   /* Note: strncat always puts
+      strncat(src_path_full, sn, strlen(sn));   /* Note: strncat() always puts
                                                    \0 at the end. */
    }
    *src = fopen(src_path_full, "rb");
    if (*src == NULL)
-      raise_err("Failed to open the requested file from %s.",
-         src_path_full);
+      raise_err("%s: Failed to open the requested file from %s.",
+         __func__, src_path_full);
 
    dest_path_full = malloc(strlen(dp) + strlen(dn) + 1);
    if (dest_path_full == NULL)
-      raise_err("Failed to allocate memory dynamically.");
+      raise_err("%s: Failed to allocate memory dynamically.", __func__);
    if (options->suppress_dest_path) {
       strncpy(dest_path_full, CURRENT_DIR, 3);
       strncat(dest_path_full, dn, strlen(dn));
@@ -327,8 +327,8 @@ char *open_wav(
    }
    *dest = fopen(dest_path_full, "wb");
    if (*dest == NULL)
-      raise_err("Failed to open the requested file from %s.",
-         dest_path_full);
+      raise_err("%s: Failed to open the requested file from %s.",
+         __func__, dest_path_full);
 
    return dest_path_full;
 }
@@ -337,7 +337,9 @@ void close_wav(FILE *src, FILE *dest) {
    int result;
 
    result = fclose(src);
-   if (result == EOF) raise_err("Failed to close the source wav file.", 123);
+   if (result == EOF)
+      raise_err("%s: Failed to close the source wav file.", __func__);
    result = fclose(dest);
-   if (result == EOF) raise_err("Failed to close the destination wav file.");
+   if (result == EOF)
+      raise_err("%s: Failed to close the destination wav file.", __func__);
 }

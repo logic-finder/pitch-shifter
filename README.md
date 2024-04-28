@@ -6,13 +6,13 @@ make
 ```
 ## Usage
 ```c
-./process --help
-./process --src in.wav --dest out.wav --pitch 0.84
+./pitsh --help
+./pitsh --src in.wav --dest out.wav --pitch 0.84
 
 /* -S is the abbreviation of --src;
    -D = --dest, -P = --pitch, -T = --speed */
 
-./process -S in.wav -D out.wav -P 0.84
+./pitsh -S in.wav -D out.wav -P 0.84
 ```
 <i>Note. It would be helpful to use the following formula to get values for --pitch command: 2^(n/12).<br>Example: 3 half tones down = 2^(-3/12) = 0.84</i>
 <table>
@@ -63,16 +63,16 @@ I found it inconvenient that I had to type the paths to .wav files all the time.
 /* Suppose that .wav files are in ./src directory, but I do not want to type 'src/' every time in front of .wav files. */
 
 /* without .env file */
-./process --src src/music.wav --dest dest/result.wav --pitch 1.06
+./pitsh --src src/music.wav --dest dest/result.wav --pitch 1.06
 
 /* with .env file written as follows */
 SRC_PATH    src/
 DEST_PATH   dest/
 
-./process --src music.wav --dest result.wav --pitch 1.06
+./pitsh --src music.wav --dest result.wav --pitch 1.06
 
 /* If I want to search from a different directory, I can put the asterisk right after --src (= -S) command so that I can ignore the SRC_PATH. */
-./process --src* other_dir/music.wav --dest result.wav --pitch 1.06
+./pitsh --src* other_dir/music.wav --dest result.wav --pitch 1.06
 
 /* this 'suppression' can be applied to --dest (= -D) also. */
 ```

@@ -16,13 +16,13 @@ struct env_data *realize_env_data(void) {
 
    objptr = malloc(sizeof(struct env_data));
    if (objptr == NULL)
-      raise_err("Failed to create a new struct env_data.");
+      raise_err("%s: Failed to create a new struct env_data.", __func__);
    src_path = malloc(ENVFILE_VALUE_MAX + 1);
    if (src_path == NULL)
-      raise_err("Failed to allocate memory dynamically.");
+      raise_err("%s: Failed to allocate memory dynamically.", __func__);
    dest_path = malloc(ENVFILE_VALUE_MAX + 1);
    if (dest_path == NULL)
-      raise_err("Failed to allocate memory dynamically.");
+      raise_err("%s: Failed to allocate memory dynamically.", __func__);
    objptr->self = objptr;
    objptr->unrealize = unrealize;
    objptr->src_path = src_path;
@@ -38,7 +38,7 @@ static void *iterate(struct env_data *objptr, int idx) {
       case 0: return objptr->src_path;
       case 1: return objptr->dest_path;
       default:
-         raise_err("Failed to access the field of struct env_data.");
+         raise_err("%s: Failed to access the field of struct env_data.", __func__);
    }
 }
 

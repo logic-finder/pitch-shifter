@@ -60,7 +60,7 @@ void inspect_execution_options(
    if (argc == 1)
       raise_err(
          "Some command line arguments are required to run.\n"
-         "Enter ./process --help to check such arguments.");
+         "Enter ./pitsh --help to check such arguments.");
 
    argv++;  /* Skip the program name. */
    if (strncmp(*argv, OP_HELP, strlen(OP_HELP)) == 0) {
@@ -135,21 +135,32 @@ void inspect_execution_options(
 }
 
 static void handle_help_option(void) {
-   printf("Usage: ./process\n"
-          "  --help           Display the manual that you are reading now.\n"
-          "  --src            The name of the input .wav file.\n"
-          "     -S            Equivalent to --src.\n"
-          "  --dest           The name of the output .wav file.\n"
-          "      -D           Equivalent to --dest.\n"
-          "  --pitch          Modify pitch, meanwhile keeping speed the same.\n"
+   printf("Usage: ./pitsh\n"
+          "       --help      Display the manual that you are reading now.\n"
+          "  --src or -S      The path of the input .wav file.\n"
+          " --dest or -D      The path of the output .wav file.\n"
+          "--pitch or -P      Modify pitch, meanwhile keeping speed the same.\n"
           "                   The value of 2 would yield 1 octave high.\n"
-          "       -P          Equivalent to --pitch.\n"
-          "  --speed          Modify speed, meanwhile keeping pitch the same.\n"
+          "--speed or -T      Modify speed, meanwhile keeping pitch the same.\n"
           "                   The value of 2 would yield the doubled length.\n"
-          "       -T          Equivalent to --speed.\n"
-          "  [--size]         Assign a specific grain size.\n"
-          "  [--verbose]      Display the metadata of the input .wav file.\n\n");
-   printf("(Example) ./process --src in.wav --dest out.wav --pitch 0.8\n");
+          " --src* / -S*      The SRC_PATH from .env file does not affect.\n"
+          "--dest* / -D*      The DEST_PATH from .env file does not affect.\n"
+          "     [--size]      Assign a specific grain size.\n"
+          "  [--verbose]      Display the metadata of the input .wav file.\n"
+          "\n"
+          "<Note>\n"
+          "--src and --dest are required. Also, between --pitch and --speed,\n"
+          "only either one is required; can't be set together.\n"
+          "--pitch and --speed value range: 0 ~ 3 (inclusive)\n"
+          "--size value range: 2205 ~ 8820 (inclusive)\n"
+          "\n"
+          "<.env File>\n"
+          "            #      Lines starting with # are comments and ignored.\n"
+          "     SRC_PATH      The program will search --src file from this directory.\n"
+          "    DEST_PATH      The program will save the result under this directory.\n"
+          "\n"
+          "<Example>\n"
+          "./pitsh --src in.wav --dest out.wav --pitch 0.84\n");
 }
 
 /* Note: last character */
@@ -168,7 +179,8 @@ static int detect_suppression(
       = strlen(input_option_name) - strlen(option_name);
    
    if (input_option_value == NULL)
-      raise_err("Failed to get data for this option: %s.", option_name);
+      raise_err("%s: Failed to get data for the option %s.",
+         __func__, option_name);
    if (difference > 1)
       handle_unknown_argument(input_option_name);
    if (difference == 1)
@@ -224,15 +236,19 @@ static void get_factor_value(
    char *indicator;
 
    if (src == NULL)
-      raise_err("Failed to get data for this option: %s.", option_name);
+      raise_err("%s: Failed to get data for this option: %s.",
+         __func__, option_name);
    errno = 0;
    options->factor = strtod(src, &indicator);
    if (indicator == src)
-      raise_err("An invalid %s value: %s.", option_name, src);
+      raise_err("%s: An invalid %s value: %s.",
+         __func__, option_name, src);
    if (errno == ERANGE)
-      raise_err("An invalid %s value: %s.", option_name, src);
+      raise_err("%s: An invalid %s value: %s.",
+         __func__, option_name, src);
    if (options->factor < 0 || options->factor > MAX_FACTOR_VALUE)
-      raise_err("A %s value out of range: %s.", option_name, src);
+      raise_err("%s: A %s value out of range: %s.",
+         __func__, option_name, src);
 }
 
 static void handle_pitch_option(
@@ -268,13 +284,26 @@ static void handle_speed_option(
 }
 
 static void handle_size_option(struct execution_options *options, char *src) {
+   char *indicator;
+
    if (src == NULL)
-      raise_err("Failed to get data for this option: %s.\n", OP_SIZE);
-   options->size = atoi(src);
-   if (options->size == 0)
-      raise_err("An invalid %s value: %s.", OP_SIZE, src);
+      raise_err("%s: Failed to get data for this option: %s.\n",
+         __func__, OP_SIZE);
+   errno = 0;
+   options->size = (int) strtol(src, &indicator, 10);
+   if (indicator == src)
+      raise_err("%s: An invalid %s value: %s.",
+         __func__, OP_SIZE, src);
+   if (errno == ERANGE)
+      raise_err("%s: An invalid %s value: %s.",
+         __func__, OP_SIZE, src);
    if (options->size < MIN_SIZE_VALUE || options->size > MAX_SIZE_VALUE)
-      raise_err("A %s value out of range: %s.", OP_SIZE, src);
+      raise_err("%s: A %s value out of range: %s.",
+         __func__, OP_SIZE, src);
+
+   printf("size: %d\n", options->size);
+   exit(EXIT_FAILURE);
+
 }
 
 static void handle_verbose_option(struct execution_options *options) {
@@ -282,5 +311,5 @@ static void handle_verbose_option(struct execution_options *options) {
 }
 
 static void handle_unknown_argument(char *src) {
-   raise_err("An unknown argument: %s.", src);
+   raise_err("%s: An unknown argument: %s.", __func__, src);
 }

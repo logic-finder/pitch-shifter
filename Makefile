@@ -1,6 +1,6 @@
-process: main.o wave_file.o miscellaneous.o execution_options.o \
+pitsh: main.o wave_file.o miscellaneous.o execution_options.o \
 		env_data.o command_line.o envfile_reader.o processing.o
-	gcc -O -Wall -W -pedantic -o process \
+	gcc -O -Wall -W -pedantic -o pitsh \
 	main.o wave_file.o miscellaneous.o execution_options.o \
 	env_data.o command_line.o envfile_reader.o processing.o
 
