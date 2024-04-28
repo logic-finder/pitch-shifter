@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include "envfile_reader.h"
 #include "execution_options.h"
