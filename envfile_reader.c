@@ -14,6 +14,7 @@
 #define READLINE_EOF          -2
 #define READLINE_EMPTY_LINE   -3
 #define READLINE_LONG_LINE    -4
+#define WRONG_ENVFILE   1
 
 static int read_line(char * restrict, int, FILE * restrict);
 static int handle_src_path_field(struct env_data *, char *, int, int *);
@@ -22,10 +23,10 @@ static int handle_unknown_field(char *, int);
 
 void read_env(struct env_data *env, struct execution_options *options) {
    FILE *envfile;
-   int result, line_count, applied_field_count = 0;
+   int result, error_flag;
+   int line_count, applied_field_count;
    char *field_name, *field_value;
    char line[ENVFILE_LINE_MAX + 1];
-   bool is_error = false;
 
    envfile = fopen(".env", "r");
    if (envfile == NULL) {
@@ -34,9 +35,11 @@ void read_env(struct env_data *env, struct execution_options *options) {
       return;
    }
 
-   for (line_count = 1; ; line_count++) {
+   error_flag = 0;
+   line_count = 0;
+   applied_field_count = 0;
+   while (++line_count) {
       result = read_line(line, ENVFILE_LINE_MAX + 1, envfile);
-
       if (result == READLINE_READ_ERROR)
          raise_err(
             "%s: An error occured while reading from the .env file stream.", __func__);
@@ -49,39 +52,33 @@ void read_env(struct env_data *env, struct execution_options *options) {
       if (field_name[0] == COMMENT)
          continue;
       if (result == READLINE_LONG_LINE) {
-         is_error = true;
+         error_flag |= WRONG_ENVFILE;
          fprintf(stderr, "Line %d is too long to process.\n", line_count);
          continue;
       }
       if (strlen(field_name) > ENVFILE_NAME_MAX) {
-         is_error = true;
+         error_flag |= WRONG_ENVFILE;
          fprintf(stderr,
             "The field name at line %d is too long (> %d).\n",
             line_count, ENVFILE_NAME_MAX);
          continue;
       }
-
       field_value = strtok(NULL, " \t\0");
-
       if (strncmp(field_name, SRC_PATH, strlen(SRC_PATH)) == 0)
-         is_error
-            = handle_src_path_field(env, field_value, line_count, &applied_field_count);
+         error_flag
+            |= handle_src_path_field(env, field_value, line_count, &applied_field_count);
       else if (strncmp(field_name, DEST_PATH, strlen(DEST_PATH)) == 0)
-         is_error
-            = handle_dest_path_field(env, field_value, line_count, &applied_field_count);
+         error_flag
+            |= handle_dest_path_field(env, field_value, line_count, &applied_field_count);
       else
-         is_error = handle_unknown_field(field_name, line_count);
+         error_flag |= handle_unknown_field(field_name, line_count);
    }
+   if (error_flag & WRONG_ENVFILE)
+      raise_err("%s: Unsuccessful read of .env file.", __func__);
 
    result = fclose(envfile);
    if (result == EOF)
       raise_err("%s: Failed to close the .env file stream.", __func__);
-
-   if (is_error) {
-      printf("test\n");
-      exit(EXIT_FAILURE);
-   }
-
    if (options->verbose)
       printf("Successful read of .env file: total %d fields applied.\n",
          applied_field_count);
@@ -136,25 +133,23 @@ static int handle_src_path_field(
    int line_count,
    int *applied_field_count)
 {
-   bool is_error;
-
    if (field_value == NULL) {
       fprintf(stderr,
          "The field " SRC_PATH " at line %d doesn't have a value.\n",
          line_count);
-      return (is_error = true);
+      return WRONG_ENVFILE;
    }
    if (strlen(field_value) > ENVFILE_VALUE_MAX) {
       fprintf(stderr,
          "The value of the field " SRC_PATH " at line %d is too long (> %d).\n",
          line_count, ENVFILE_VALUE_MAX);
-      return (is_error = true);
+      return WRONG_ENVFILE;
    }
 
    strncpy(env->src_path, field_value, strlen(field_value) + 1);
    (*applied_field_count)++;
 
-   return (is_error = false);
+   return !WRONG_ENVFILE;
 }
 
 static int handle_dest_path_field(
@@ -163,32 +158,28 @@ static int handle_dest_path_field(
    int line_count,
    int *applied_field_count)
 {
-   bool is_error;
-
    if (field_value == NULL) {
       fprintf(stderr,
          "The field " DEST_PATH " at line %d doesn't have a value.\n",
          line_count);
-      return (is_error = true);
+      return WRONG_ENVFILE;
    }
    if (strlen(field_value) > ENVFILE_VALUE_MAX) {
       fprintf(stderr,
          "The value of the field " DEST_PATH " at line %d is too long (> %d).\n",
          line_count, ENVFILE_VALUE_MAX);
-      return (is_error = true);
+      return WRONG_ENVFILE;
    }
    
    strncpy(env->dest_path, field_value, strlen(field_value) + 1);
    (*applied_field_count)++;
 
-   return (is_error = false);
+   return !WRONG_ENVFILE;
 }
 
 static int handle_unknown_field(char *field_name, int line_count) {
-   bool is_error;
-
    fprintf(stderr, "The field %s at line %d is unknown.\n",
       field_name, line_count);
 
-   return (is_error = true);
+   return WRONG_ENVFILE;
 }
