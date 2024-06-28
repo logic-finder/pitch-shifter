@@ -152,9 +152,9 @@ static void handle_help_option(void) {
           "--src and --dest are required. Also, between --pitch and --speed,\n"
           "only either one is required; can't be set together.\n"
           "--pitch and --speed value range: 0 ~ 3 (inclusive)\n"
-          "--size value range: 2205 ~ 8820 (inclusive)\n"
+          "--size value range: 2205 ~ 8820 (inclusive); default = 2205.\n"
           "\n"
-          "<.env File>\n"
+          "<.env file>\n"
           "            #      Lines starting with # are comments and ignored.\n"
           "     SRC_PATH      The program will search --src file from this directory.\n"
           "    DEST_PATH      The program will save the result under this directory.\n"
@@ -300,10 +300,6 @@ static void handle_size_option(struct execution_options *options, char *src) {
    if (options->size < MIN_SIZE_VALUE || options->size > MAX_SIZE_VALUE)
       raise_err("%s: A %s value out of range: %s.",
          __func__, OP_SIZE, src);
-
-   printf("size: %d\n", options->size);
-   exit(EXIT_FAILURE);
-
 }
 
 static void handle_verbose_option(struct execution_options *options) {
