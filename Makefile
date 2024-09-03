@@ -1,32 +1,66 @@
-pitsh: main.o wave_file.o miscellaneous.o execution_options.o \
-		env_data.o command_line.o envfile_reader.o processing.o
-	gcc -O -Wall -W -pedantic -o pitsh \
-	main.o wave_file.o miscellaneous.o execution_options.o \
-	env_data.o command_line.o envfile_reader.o processing.o
+## Settings
+srcdir := src
+objdir := $(srcdir)/.object
+depdir := $(srcdir)/.depend
+headir := $(srcdir)/header
 
-main.o: main.c wave_file.h miscellaneous.h execution_options.h \
-		env_data.h command_line.h envfile_reader.h processing.h 
-	gcc -c main.c
+SHELL := /bin/sh
+CC := gcc
+CFLAGS := -O -Wall -W -pedantic -g
+CPPFLAGS := -I $(headir)
+SUFFIXES :=
+SUFFIXES := .c .o .h
 
-wave_file.o: wave_file.c wave_file.h miscellaneous.h
-	gcc -c wave_file.c
+define color_str
+"\033[$1m$2\033[0m"
+endef
+name_str = $(call color_str,38;5;49;1,$1)
+build_completed_str = $(call color_str,48;5;222;30, [ BUILD COMPLETED ] )
+notice_str = $(call color_str,48;5;150;30, [ NOTICE ] )
 
-miscellaneous.o: miscellaneous.c miscellaneous.h
-	gcc -c miscellaneous.c
+## Compilations
+program := pitsh
+sources := $(wildcard $(srcdir)/*.c)
+objects := $(sources:$(srcdir)/%.c=$(objdir)/%.o)
 
-execution_options.o: execution_options.c execution_options.h \
-		miscellaneous.h
-	gcc -c execution_options.c
+### This is the default goal. ###
+$(program): $(objects)
+	$(CC) $^ $(CFLAGS) -o $@
+	@echo $(build_completed_str) $(call name_str,./$@)
 
-env_data.o: env_data.c env_data.h miscellaneous.h
-	gcc -c env_data.c
+# .d file contains a list of .h files on which the .c file depends.
+include $(sources:$(srcdir)/%.c=$(depdir)/%.d)
 
-command_line.o: command_line.c command_line.h miscellaneous.h
-	gcc -c command_line.c
+$(objdir)/%.o:
+	$(CC) $< $(CPPFLAGS) $(CFLAGS) -c -o $@
+	@echo $(notice_str) $(call name_str,$@) has been created.
 
-envfile_reader.o: envfile_reader.c envfile_reader.h \
-		execution_options.h miscellaneous.h env_data.h
-	gcc -c envfile_reader.c
+# $$$$ expands to $$, which means "the process ID of the shell." 
+$(depdir)/%.d: $(srcdir)/%.c
+	@set -e; rm -f $@; \
+	 $(CC) $< $(CPPFLAGS) -MM > $@.$$$$; \
+	 printf "%s%s" "$(objdir)/" "$$(cat $@.$$$$)" > $@; \
+	 rm -f $@.$$$$
 
-processing.o: processing.c processing.h miscellaneous.h
-	gcc -c processing.c
+## Miscellaneous Tasks
+.PHONY: clean
+clean:
+	rm -f pitsh
+	rm -f $(depdir)/* $(objdir)/*
+
+.PHONY: help
+cmd_group = $(call color_str,48;5;148;30, $1 )
+cmd_color = $(call color_str,38;5;220,$1)
+cmd_arg_color = $(call color_str,36,$1)
+help:
+	@echo The below are the list of available commands from this Makefile.
+	@echo
+	@echo $(call cmd_group,1. MAKING ACTIONS)
+	@echo "	make"
+	@echo $(call color_str,90,	or )make $(call cmd_color,$(program))"	builds this program."
+	@echo
+	@echo $(call cmd_group,2. CLEANING ACTIONS)
+	@echo "	make "$(call cmd_color,clean)"	deletes ./pitsh, $(depdir)/* and $(objdir)/*."
+	@echo
+	@echo $(call cmd_group,3. MISCELLANEOUS)
+	@echo "	make "$(call cmd_color,help)"	prints this long manual on the screen that you are reading now."

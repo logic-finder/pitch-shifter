@@ -1,5 +1,7 @@
-*.o
 pitsh
+.env
+src/.depend
+src/.object
+
 /in
 /out
-.env
