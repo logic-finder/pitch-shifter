@@ -57,8 +57,8 @@ If one should be in need of compiling the program manually, e.g. `make` is not a
    </tbody>
 </table>
 
-### About `.env` File
-I found it inconvenient that I had to type the paths to .wav files all the time. From this reason, I've had the program read .env file where the pre-defined --src and --dest paths are written. Meanwhile, it would be helpful to use the `*` character if it is desired to provide a full path manually.
+### About the `.env` File
+I found it inconvenient that I had to type the paths to .wav files all the time. From this reason, I've had the program read the `.env` file where the pre-defined --src and --dest paths are written. Meanwhile, it would be helpful to use the `*` character if it is desired to provide a full path manually.
 ```c
 /* Suppose that .wav files are in ./src directory,
    but I do not want to type 'src/' every time in
