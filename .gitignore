@@ -1,7 +1,9 @@
 pitsh
 .env
-src/.depend
-src/.object
+src/.depend/*
+!src/.depend/.emptydir
+src/.object/*
+!src/.object/.emptydir
 
 /in
 /out
