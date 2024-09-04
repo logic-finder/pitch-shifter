@@ -2,6 +2,8 @@
 `pitsh` is a simple program provides two functions: (1) pitch shifter (2) time stretcher. Meanwhile, this program is developed by a beginner and the results which this program produce are somewhat unsatisfactory in that there are some perceivable noises in those.
 ## Build
 Executing `make` command in the root directory will produce `pitsh`, the executable. Meanwhile, one may find it helpful to type `make help` to find the effect of `make clean` command.
+
+If one should be in need of compiling the program manually, e.g. `make` is not available, then it must be no problem to compile/link every .c files from the `src` directory in order to get the executable.
 ## Usage
 ```c
 ./pitsh --help
