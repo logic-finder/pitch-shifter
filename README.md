@@ -1,5 +1,5 @@
 ## Introduction
-`pitsh` is a simple program provides two functions: (1) pitch shifter (2) time stretcher. Meanwhile, this program is developed by a beginner and the results which this program produce are somewhat unsatisfactory in that there are some perceivable noises in those.
+`pitsh` is a simple program provides two functions: (1) pitch shifter (2) time stretcher. Meanwhile, this program is developed by a beginner and the results which this program produces are somewhat unsatisfactory in that there are some perceivable noises in those.
 ## Build
 Executing `make` command in the root directory will produce `pitsh`, the executable. Meanwhile, one may find it helpful to type `make help` to find the effect of `make clean` command.
 
