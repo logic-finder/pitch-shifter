@@ -14,7 +14,7 @@ If one should be in need of compiling the program manually, e.g. `make` is not a
 ./pitsh ... --speed 1.2
 ./pitsh ...  -T     1.2   // abbreviated
 ```
-<i>Note. It would be helpful to use the following formula to get values for --pitch command: 2^(n/12).<br>Example: 3 half tones down = 2^(-3/12) = 0.84</i>
+Note. It would be helpful to use the following formula to get values for `--pitch` command: 2^(n/12).<br>Example: 3 half tones down = 2^(-3/12) = 0.84
 <table>
    <thead>
       <tr>
